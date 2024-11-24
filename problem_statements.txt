@@ -1,4 +1,5 @@
 // Function to save accounts' data to the file
+
 void saveAccountsToFile() {
   int i;
   FILE *file = fopen(ACCOUNT_FILENAME, "w"); // Open the file for writing
@@ -8,6 +9,7 @@ void saveAccountsToFile() {
   }
 
   // Write each account's data to the file, each field on a new line
+  
   for (i = 0; i < accountCount; i++) {
     fprintf(file, "%d\n%s\n%f\n%d\n%s\n", accounts[i].accountNumber,
             accounts[i].name, accounts[i].balance, accounts[i].loyaltyPoints,
@@ -18,6 +20,7 @@ void saveAccountsToFile() {
 }
 
 // Function to load accounts from a file into the system
+
 void loadAccountsFromFile() {
   FILE *file = fopen(ACCOUNT_FILENAME, "r"); // Open the file for reading
   if (file == NULL) {
