@@ -101,6 +101,7 @@ void saveUsersToFile() {
 // Function to create a new user account
 void createAccount() {
   int i;
+
   if (userCount >= MAX_USERS) {
     printf("Maximum user limit reached. Cannot create more accounts.\n");
     return;
@@ -153,22 +154,51 @@ void createAccount() {
   saveUsersToFile();
 
   printf("Account created successfully!\n");
+
+  char choice;
+    printf("Do you want to create a bank account as well? (y/n): ");
+    scanf(" %c", &choice);
+
+    if (choice == 'y' || choice == 'Y') {
+        if (accountCount >= MAX_ACCOUNTS) {
+            printf("Maximum bank account limit reached. Cannot create more accounts.\n");
+            return;
+        }
+
+        Account newAccount;
+        newAccount.accountNumber = accountCount + 1;
+        strcpy(newAccount.name, newUser.username);
+
+        printf("Enter initial deposit: ");
+        scanf("%f", &newAccount.balance);
+
+        newAccount.loyaltyPoints = newAccount.balance * LOYALTY_POINTS_RATE;
+
+        accounts[accountCount] = newAccount;
+        accountCount++;
+
+        printf("Bank account created successfully!\n");
+        printf("Account Number: %d, Name: %s, Balance: %.2f, Loyalty Points: %d\n",
+               newAccount.accountNumber, newAccount.name, newAccount.balance, newAccount.loyaltyPoints);
+    }
 }
 
 // Function to show all existing users with encrypted passwords
 void showUsers() {
   int i;
+
   if (userCount == 0) {
     printf("No users found.\n");
     return;
   }
 
-  printf("\nExisting Users:\n");
+  printf("\n=============== Existing Users ===============\n");
   // Display each user with their encrypted password
   for (i = 0; i < userCount; i++) {
     printf("Username: %s, Encrypted Password: %s\n", users[i].username,
            users[i].password);
   }
+  printf("==============================================\n");
 }
 
 // Function to login a user by matching the username and password
@@ -475,12 +505,14 @@ int main() {
   loadUsersFromFile();
 
   do {
-    printf("\n==== Main Menu ====\n");
+    printf("\n==== Main Menu ======\n");
     printf("1. Login\n");
     printf("2. Create New Account\n");
     printf("3. Show All Users\n");
     printf("4. Exit\n");
-    printf("Enter your choice: ");
+    printf("=====================\n");
+
+    printf("\nEnter your choice: ");
     scanf("%d", &choice);
     getchar(); // Consume newline after input
 
