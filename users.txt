@@ -1,3 +1,4 @@
-Hassan 699
-Rohaan 3<;
-Muhib <<<
+admin adminpassword 1
+Hassan pass1 0
+Rohaan pass2 0
+Muhib pass3 0
