@@ -222,9 +222,9 @@ void adminMenu(char *username) {
     printf("5. Delete Account\n");
     printf("6. Debit Account\n");
     printf("7. Credit Account\n");
-    printf("8. Fund Transfer\n");
-    printf("9. Show All Users\n");
-    printf("10. Logout\n");
+    printf("8. Show All Users\n");
+    printf("9. Logout\n");
+
     printf("Enter your choice: ");
     scanf("%d", &choice);
     getchar(); // Consume newline
@@ -252,12 +252,9 @@ void adminMenu(char *username) {
       creditAccount(username, 1); // Admin can credit any account
       break;
     case 8:
-      fundTransfer(username, 1); // Admin can transfer between any accounts
-      break;
-    case 9:
       showUsers(); // Show all users
       break;
-    case 10:
+    case 9:
       printf("Logging out...\n");
       return;
     default:
@@ -296,6 +293,7 @@ void userMenu(char *username) {
 }
 
 // Function to add a new bank account
+// Function to add a new bank account
 void addAccount(char *username) {
   if (accountCount >= MAX_ACCOUNTS) {
     printf("Maximum account limit reached.\n");
@@ -305,6 +303,29 @@ void addAccount(char *username) {
   Account newAccount;
   newAccount.accountNumber =
       nextAccountNumber++; // Assign a unique account number
+
+  // Prompt admin for the account holder's username
+  char accountOwnerUsername[USERNAME_LENGTH];
+  printf("Enter account holder's username: ");
+  fgets(accountOwnerUsername, sizeof(accountOwnerUsername), stdin);
+  accountOwnerUsername[strcspn(accountOwnerUsername, "\n")] =
+      '\0'; // Remove newline
+
+  // Check if the entered username exists
+  int userExists = 0;
+  for (int i = 0; i < userCount; i++) {
+    if (strcmp(users[i].username, accountOwnerUsername) == 0) {
+      userExists = 1;
+      break;
+    }
+  }
+
+  if (!userExists) {
+    printf("User '%s' does not exist. Cannot create account.\n",
+           accountOwnerUsername);
+    return;
+  }
+
   printf("Enter account holder's name: ");
   fgets(newAccount.name, sizeof(newAccount.name), stdin);
   newAccount.name[strcspn(newAccount.name, "\n")] = '\0'; // Remove newline
@@ -316,8 +337,8 @@ void addAccount(char *username) {
   // Set loyalty points based on the deposit amount
   newAccount.loyaltyPoints = (int)(newAccount.balance * LOYALTY_POINTS_RATE);
 
-  // Associate the account with the user's username
-  strcpy(newAccount.ownerUsername, username);
+  // Associate the account with the entered username
+  strcpy(newAccount.ownerUsername, accountOwnerUsername);
 
   // Store the new account in the accounts array
   accounts[accountCount] = newAccount;
@@ -602,10 +623,7 @@ void fundTransfer(char *username, int isAdmin) {
   // Save accounts to file
   saveAccountsToFile();
 
-  printf("Transfer successful! New balances:\n");
-  printf("Sender (Account %d): %.2f\n", sender->accountNumber, sender->balance);
-  printf("Receiver (Account %d): %.2f\n", receiver->accountNumber,
-         receiver->balance);
+  printf("Transfer successful! New balance: Rs.%.2f\n", sender->balance);
 }
 
 // Function to inquire balance for the user's account
@@ -618,7 +636,7 @@ void balanceInquiry(char *username) {
       printf("Account Number: %d\n", accounts[i].accountNumber);
       printf("Name: %s\n", accounts[i].name);
       printf("Balance: %.2f\n", accounts[i].balance);
-      printf("Loyalty Points: %d\n", accounts[i].loyaltyPoints);
+      printf("Loyalty Points: %d\n\n", accounts[i].loyaltyPoints);
       found = 1;
     }
   }
@@ -686,9 +704,6 @@ int main() {
   // Load users and accounts from file when the program starts
   loadUsersFromFile();
   loadAccountsFromFile();
-
-  // No need to create admin account during runtime since it's pre-defined in
-  // the file
 
   do {
     printf("\n==== Main Menu ======\n");
