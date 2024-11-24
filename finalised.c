@@ -38,6 +38,7 @@ void createAccount();      // Function to create a new user account
 void showUsers();          // Displays all users (with encrypted passwords)
 void login();              // Function for user login
 void adminMenu();          // Admin menu for managing bank accounts
+void userMenu();           // User menu for regular users
 void addAccount();         // Function to add a new bank account
 void viewAccounts();       // Function to view all bank accounts
 void viewAccountDetails(); // Function to view details of a specific account
@@ -156,31 +157,33 @@ void createAccount() {
   printf("Account created successfully!\n");
 
   char choice;
-    printf("Do you want to create a bank account as well? (y/n): ");
-    scanf(" %c", &choice);
+  printf("Do you want to create a bank account as well? (y/n): ");
+  scanf(" %c", &choice);
 
-    if (choice == 'y' || choice == 'Y') {
-        if (accountCount >= MAX_ACCOUNTS) {
-            printf("Maximum bank account limit reached. Cannot create more accounts.\n");
-            return;
-        }
-
-        Account newAccount;
-        newAccount.accountNumber = accountCount + 1;
-        strcpy(newAccount.name, newUser.username);
-
-        printf("Enter initial deposit: ");
-        scanf("%f", &newAccount.balance);
-
-        newAccount.loyaltyPoints = newAccount.balance * LOYALTY_POINTS_RATE;
-
-        accounts[accountCount] = newAccount;
-        accountCount++;
-
-        printf("Bank account created successfully!\n");
-        printf("Account Number: %d, Name: %s, Balance: %.2f, Loyalty Points: %d\n",
-               newAccount.accountNumber, newAccount.name, newAccount.balance, newAccount.loyaltyPoints);
+  if (choice == 'y' || choice == 'Y') {
+    if (accountCount >= MAX_ACCOUNTS) {
+      printf(
+          "Maximum bank account limit reached. Cannot create more accounts.\n");
+      return;
     }
+
+    Account newAccount;
+    newAccount.accountNumber = accountCount + 1;
+    strcpy(newAccount.name, newUser.username);
+
+    printf("Enter initial deposit: ");
+    scanf("%f", &newAccount.balance);
+
+    newAccount.loyaltyPoints = newAccount.balance * LOYALTY_POINTS_RATE;
+
+    accounts[accountCount] = newAccount;
+    accountCount++;
+
+    printf("Bank account created successfully!\n");
+    printf("Account Number: %d, Name: %s, Balance: %.2f, Loyalty Points: %d\n",
+           newAccount.accountNumber, newAccount.name, newAccount.balance,
+           newAccount.loyaltyPoints);
+  }
 }
 
 // Function to show all existing users with encrypted passwords
@@ -238,6 +241,14 @@ void login() {
     if (strcmp(users[i].username, username) == 0 &&
         strcmp(users[i].password, encryptedPassword) == 0) {
       printf("Login successful! Welcome, %s.\n", username);
+
+      if (strcmp(username, "admin") == 0) {
+        printf("Redirecting to admin menu...\n");
+        adminMenu(); // Call the admin menu
+      } else {
+        printf("Redirecting to user menu...\n");
+        userMenu(); // Call a user menu function
+      }
       return;
     }
   }
@@ -292,6 +303,48 @@ void adminMenu() {
     case 9:
       printf("Exiting admin page...\n");
       return;
+    default:
+      printf("Invalid choice. Please try again.\n");
+    }
+  } while (1);
+}
+
+void userMenu() {
+  int choice;
+
+  do {
+    printf("\n==== User Menu ====\n");
+    printf("1. View Account Balance\n");
+    printf("2. Transfer Funds\n");
+    printf("3. Logout\n");
+    printf("Enter your choice: ");
+    scanf("%d", &choice);
+
+    switch (choice) {
+    case 1:
+      // Functionality to view account balance
+      printf("Enter your account number: ");
+      int accountNumber;
+      scanf("%d", &accountNumber);
+      balanceInquiry(accounts, accountCount, accountNumber);
+      break;
+    case 2:
+      // Functionality to transfer funds
+      printf("Enter sender account number: ");
+      int senderAccount;
+      scanf("%d", &senderAccount);
+      printf("Enter receiver account number: ");
+      int receiverAccount;
+      scanf("%d", &receiverAccount);
+      printf("Enter amount to transfer: ");
+      float amount;
+      scanf("%f", &amount);
+      fundTransfer(accounts, accountCount, senderAccount, receiverAccount,
+                   amount);
+      break;
+    case 3:
+      printf("Logging out...\n");
+      return; // Exit the user menu
     default:
       printf("Invalid choice. Please try again.\n");
     }
