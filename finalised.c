@@ -5,15 +5,15 @@
 #define MAX_USERS 100
 #define USERNAME_LENGTH 30
 #define PASSWORD_LENGTH 30
-#define SHIFT 3 // Shift for Caesar cipher to encrypt password
 #define MAX_ACCOUNTS 100
 #define LOYALTY_POINTS_RATE 0.1 // 10 points per 100 units deposited
 #define FILENAME "users.txt"
 
-// User structure to store login information (username and encrypted password)
+// User structure to store login information (username and password)
 typedef struct {
   char username[USERNAME_LENGTH];
   char password[PASSWORD_LENGTH];
+  int isAdmin; // 1 for admin, 0 for regular user
 } User;
 
 // Account structure to store bank account details (balance, loyalty points,
@@ -31,11 +31,10 @@ int userCount = 0;              // Counter to track number of users
 int accountCount = 0;           // Counter to track number of bank accounts
 
 // Function prototypes for various functionalities
-void encryptPassword(const char *password, char *encryptedPassword);
 void loadUsersFromFile();  // Loads users from file into the system
 void saveUsersToFile();    // Saves the current user data to the file
 void createAccount();      // Function to create a new user account
-void showUsers();          // Displays all users (with encrypted passwords)
+void showUsers();          // Displays all users
 void login();              // Function for user login
 void adminMenu();          // Admin menu for managing bank accounts
 void userMenu();           // User menu for regular users
@@ -50,20 +49,8 @@ void fundTransfer(Account *accounts, int totalAccounts, int senderAccount,
                   int receiverAccount,
                   float amount); // Function to transfer funds between accounts
 void balanceInquiry(Account *accounts, int totalAccounts,
-                    int accountNumber);      // Function to view account balance
-void performDebitOrCredit(Account *account); // Allow debit/credit to an account
-void menu(); // Main menu to navigate the application
-
-// Caesar cipher function to encrypt the password
-void encryptPassword(const char *password, char *encryptedPassword) {
-  int i;
-  // Shift each character of the password by the defined SHIFT amount
-  for (i = 0; password[i] != '\0' && i < PASSWORD_LENGTH; i++) {
-    encryptedPassword[i] = password[i] + SHIFT; // Apply Caesar cipher shift
-  }
-  encryptedPassword[strlen(password)] =
-      '\0'; // Null-terminate the encrypted password
-}
+                    int accountNumber); // Function to view account balance
+void menu();                            // Main menu to navigate the application
 
 // Function to load users from a file into the system
 void loadUsersFromFile() {
@@ -74,8 +61,8 @@ void loadUsersFromFile() {
   }
 
   // Read each user from the file and store it in the users array
-  while (fscanf(file, "%s %s", users[userCount].username,
-                users[userCount].password) == 2) {
+  while (fscanf(file, "%s %s %d", users[userCount].username,
+                users[userCount].password, &users[userCount].isAdmin) == 3) {
     userCount++;
   }
 
@@ -91,9 +78,10 @@ void saveUsersToFile() {
     return;
   }
 
-  // Write each user's username and encrypted password to the file
+  // Write each user's username and password to the file
   for (i = 0; i < userCount; i++) {
-    fprintf(file, "%s %s\n", users[i].username, users[i].password);
+    fprintf(file, "%s %s %d\n", users[i].username, users[i].password,
+            users[i].isAdmin);
   }
 
   fclose(file); // Close the file after writing
@@ -142,11 +130,6 @@ void createAccount() {
     return;
   }
 
-  // Encrypt the password before storing it
-  char encryptedPassword[PASSWORD_LENGTH];
-  encryptPassword(newUser.password, encryptedPassword);
-  strcpy(newUser.password, encryptedPassword);
-
   // Store the new user in the users array
   users[userCount] = newUser;
   userCount++;
@@ -155,38 +138,9 @@ void createAccount() {
   saveUsersToFile();
 
   printf("Account created successfully!\n");
-
-  char choice;
-  printf("Do you want to create a bank account as well? (y/n): ");
-  scanf(" %c", &choice);
-
-  if (choice == 'y' || choice == 'Y') {
-    if (accountCount >= MAX_ACCOUNTS) {
-      printf(
-          "Maximum bank account limit reached. Cannot create more accounts.\n");
-      return;
-    }
-
-    Account newAccount;
-    newAccount.accountNumber = accountCount + 1;
-    strcpy(newAccount.name, newUser.username);
-
-    printf("Enter initial deposit: ");
-    scanf("%f", &newAccount.balance);
-
-    newAccount.loyaltyPoints = newAccount.balance * LOYALTY_POINTS_RATE;
-
-    accounts[accountCount] = newAccount;
-    accountCount++;
-
-    printf("Bank account created successfully!\n");
-    printf("Account Number: %d, Name: %s, Balance: %.2f, Loyalty Points: %d\n",
-           newAccount.accountNumber, newAccount.name, newAccount.balance,
-           newAccount.loyaltyPoints);
-  }
 }
 
-// Function to show all existing users with encrypted passwords
+// Function to show all existing users
 void showUsers() {
   int i;
 
@@ -196,9 +150,9 @@ void showUsers() {
   }
 
   printf("\n=============== Existing Users ===============\n");
-  // Display each user with their encrypted password
+  // Display each user with their plain text password
   for (i = 0; i < userCount; i++) {
-    printf("Username: %s, Encrypted Password: %s\n", users[i].username,
+    printf("Username: %s, Password: %s\n", users[i].username,
            users[i].password);
   }
   printf("==============================================\n");
@@ -209,7 +163,6 @@ void login() {
   int i;
   char username[USERNAME_LENGTH];
   char password[PASSWORD_LENGTH];
-  char encryptedPassword[PASSWORD_LENGTH];
 
   printf("Enter username: ");
   if (fgets(username, sizeof(username), stdin) != NULL) {
@@ -233,21 +186,18 @@ void login() {
     return;
   }
 
-  // Encrypt the entered password and check it against the stored encrypted
-  // password
-  encryptPassword(password, encryptedPassword);
-
+  // Check the entered username and password against stored data
   for (i = 0; i < userCount; i++) {
     if (strcmp(users[i].username, username) == 0 &&
-        strcmp(users[i].password, encryptedPassword) == 0) {
+        strcmp(users[i].password, password) == 0) {
       printf("Login successful! Welcome, %s.\n", username);
 
-      if (strcmp(username, "admin") == 0) {
+      if (users[i].isAdmin) {
         printf("Redirecting to admin menu...\n");
         adminMenu(); // Call the admin menu
       } else {
         printf("Redirecting to user menu...\n");
-        userMenu(); // Call a user menu function
+        userMenu(); // Call the user menu
       }
       return;
     }
@@ -255,6 +205,9 @@ void login() {
 
   printf("Invalid username or password. Please try again.\n");
 }
+
+// The rest of the code remains unchanged...
+// ...
 
 // Admin menu to manage bank accounts
 void adminMenu() {
@@ -550,6 +503,49 @@ void fundTransfer(Account *accounts, int totalAccounts, int senderAccount,
          receiver->balance);
 }
 
+void balanceInquiry(Account *accounts, int totalAccounts, int accountNumber) {
+  int i, found = 0;
+
+  for (i = 0; i < totalAccounts; i++) {
+    if (accounts[i].accountNumber == accountNumber) {
+      printf("Account Number: %d\n", accounts[i].accountNumber);
+      printf("Name: %s\n", accounts[i].name);
+      printf("Balance: %.2f\n", accounts[i].balance);
+      printf("Loyalty Points: %d\n", accounts[i].loyaltyPoints);
+      found = 1;
+      break;
+    }
+  }
+
+  if (!found) {
+    printf("Account not found.\n");
+  }
+}
+
+void createAdminAccount() {
+  if (userCount >= MAX_USERS) {
+    printf("Maximum user limit reached. Cannot create more accounts.\n");
+    return;
+  }
+
+  User newAdmin;
+  printf("Enter admin username: ");
+  fgets(newAdmin.username, sizeof(newAdmin.username), stdin);
+  newAdmin.username[strcspn(newAdmin.username, "\n")] = '\0'; // Remove newline
+
+  printf("Enter admin password: ");
+  fgets(newAdmin.password, sizeof(newAdmin.password), stdin);
+  newAdmin.password[strcspn(newAdmin.password, "\n")] = '\0'; // Remove newline
+
+  newAdmin.isAdmin = 1; // Mark as admin
+
+  users[userCount] = newAdmin;
+  userCount++;
+
+  saveUsersToFile(); // Save the admin account to the file
+  printf("Admin account created successfully.\n");
+}
+
 // Main function to display the menu and manage the entire application
 int main() {
   int choice;
@@ -588,4 +584,9 @@ int main() {
   } while (choice != 4);
 
   return 0;
+}
+
+void initializeAdminAccount() {
+  strcpy(users[0].username, "admin"); // Mark as admin
+  userCount++;
 }
