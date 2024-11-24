@@ -1,4 +1,5 @@
-admin adminpassword 1
+admin admin123 1
 Hassan pass1 0
 Rohaan pass2 0
 Muhib pass3 0
+Anas pass4 0
