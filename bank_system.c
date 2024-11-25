@@ -31,7 +31,7 @@ User users[MAX_USERS];          // Array to store user accounts
 Account accounts[MAX_ACCOUNTS]; // Array to store bank accounts
 int userCount = 0;              // Counter to track number of users
 int accountCount = 0;           // Counter to track number of bank accounts
-int nextAccountNumber = 1;      // Next available account number
+int nextAccountNumber = 1000;   // Next available account number
 
 // Function prototypes for various functionalities
 void loadUsersFromFile();        // Loads users from file into the system
@@ -104,6 +104,7 @@ void loadAccountsFromFile() {
   FILE *file = fopen(ACCOUNT_FILENAME, "r"); // Open the file for reading
   if (file == NULL) {
     printf("No existing account file found.\n");
+    nextAccountNumber = 1000;
     return;
   }
 
@@ -126,7 +127,11 @@ void loadAccountsFromFile() {
   fclose(file); // Close the file after reading
 
   // Update nextAccountNumber to be one greater than the max account number
-  nextAccountNumber = maxAccountNumber + 1;
+  if (maxAccountNumber >= 1000) {
+    nextAccountNumber = maxAccountNumber + 1;
+  } else {
+    nextAccountNumber = 1000;
+  }
 }
 
 // Function to save accounts' data to the file
@@ -242,8 +247,6 @@ void adminMenu(char *username) {
   int choice;
 
   do {
-    system("cls");
-
     printf("\n+=================================+\n");
     printf("|           Admin Menu            |\n");
     printf("+=================================+\n");
@@ -303,8 +306,6 @@ void userMenu(char *username) {
   int choice;
 
   do {
-    system("cls");
-
     printf("\n+=================================+\n");
     printf("|            User Menu            |\n");
     printf("+=================================+\n");
@@ -370,10 +371,7 @@ void addAccount(char *username) {
   if (!userExists) {
     printf("User '%s' does not exist. Cannot create account.\n",
            accountOwnerUsername);
-    printf("\nPress Enter to continue...");
-    while (getchar() != '\n')
-      ; // Wait for user input
-    system("cls");
+    pauseScreen(); // Pause before returning
 
     return;
   }
@@ -587,10 +585,7 @@ void debitAccount(char *username, int isAdmin) {
                  accounts[i].balance);
         } else {
           printf("Insufficient balance.\n");
-          printf("\nPress Enter to continue...");
-          while (getchar() != '\n')
-            ; // Wait for user input
-          system("cls");
+          pauseScreen(); // Pause before returning
         }
       } else {
         printf("You do not have permission to debit from this account.\n");
@@ -598,10 +593,7 @@ void debitAccount(char *username, int isAdmin) {
       return;
     }
 
-    printf("\nPress Enter to continue...");
-    while (getchar() != '\n')
-      ; // Wait for user input
-    system("cls");
+    pauseScreen();
   }
 
   printf("Account not found.\n");
@@ -646,10 +638,7 @@ void creditAccount(char *username, int isAdmin) {
                accounts[i].balance);
       } else {
         printf("You do not have permission to credit this account.\n");
-        printf("\nPress Enter to continue...");
-        while (getchar() != '\n')
-          ; // Wait for user input
-        system("cls");
+        pauseScreen(); // Pause before returning
       }
       return;
     }
@@ -770,9 +759,7 @@ void showUsers() {
 
   if (userCount == 0) {
     printf("No users found.\n");
-    printf("\nPress Enter to continue...");
-    while (getchar() != '\n')
-      ; // Wait for user input
+    pauseScreen(); // Pause before returning
 
     return;
   }
