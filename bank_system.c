@@ -59,6 +59,8 @@ void fundTransfer(char *username,
                   int isAdmin); // Function to transfer funds between accounts
 void balanceInquiry(char *username); // Function to view account balance
 void showUsers();                    // Function to display all users
+void pauseScreen(); // Function to pause the screen and clear it after user
+                    // input
 
 // Function to load users from a file into the system
 void loadUsersFromFile() {
@@ -169,6 +171,7 @@ void createAccount() {
   for (i = 0; i < userCount; i++) {
     if (strcmp(users[i].username, newUser.username) == 0) {
       printf("Username already exists. Please choose a different username.\n");
+      pauseScreen(); // Pause before returning
       return;
     }
   }
@@ -188,6 +191,7 @@ void createAccount() {
   saveUsersToFile();
 
   printf("Account created successfully!\n");
+  pauseScreen(); // Pause before returning
 }
 
 // Function to login a user by matching the username and password
@@ -216,9 +220,13 @@ void login() {
 
       if (users[i].isAdmin) {
         printf("Redirecting to admin menu...\n");
+
+        pauseScreen();       // Pause before returning
         adminMenu(username); // Call the admin menu
       } else {
         printf("Redirecting to user menu...\n");
+
+        pauseScreen();      // Pause before returning
         userMenu(username); // Call the user menu
       }
       return;
@@ -226,6 +234,7 @@ void login() {
   }
 
   printf("Invalid username or password. Please try again.\n");
+  pauseScreen(); // Pause before returning
 }
 
 // Admin menu to manage bank accounts
@@ -233,6 +242,8 @@ void adminMenu(char *username) {
   int choice;
 
   do {
+    system("cls");
+
     printf("\n+=================================+\n");
     printf("|           Admin Menu            |\n");
     printf("+=================================+\n");
@@ -249,7 +260,8 @@ void adminMenu(char *username) {
 
     printf("\nEnter your choice: ");
     scanf("%d", &choice);
-    getchar(); // Consume newline
+    while (getchar() != '\n')
+      ; // Clear the input buffer
 
     switch (choice) {
     case 1:
@@ -281,6 +293,7 @@ void adminMenu(char *username) {
       return;
     default:
       printf("Invalid choice. Please try again.\n");
+      pauseScreen(); // Pause before re-displaying the menu
     }
   } while (1);
 }
@@ -290,6 +303,8 @@ void userMenu(char *username) {
   int choice;
 
   do {
+    system("cls");
+
     printf("\n+=================================+\n");
     printf("|            User Menu            |\n");
     printf("+=================================+\n");
@@ -300,7 +315,8 @@ void userMenu(char *username) {
 
     printf("\nEnter your choice: ");
     scanf("%d", &choice);
-    getchar(); // Consume newline
+    while (getchar() != '\n')
+      ; // Clear the input buffer
 
     switch (choice) {
     case 1:
@@ -314,6 +330,7 @@ void userMenu(char *username) {
       return; // Exit the user menu
     default:
       printf("Invalid choice. Please try again.\n");
+      pauseScreen(); // Pause before re-displaying the menu
     }
   } while (1);
 }
@@ -353,6 +370,11 @@ void addAccount(char *username) {
   if (!userExists) {
     printf("User '%s' does not exist. Cannot create account.\n",
            accountOwnerUsername);
+    printf("\nPress Enter to continue...");
+    while (getchar() != '\n')
+      ; // Wait for user input
+    system("cls");
+
     return;
   }
 
@@ -379,6 +401,8 @@ void addAccount(char *username) {
 
   printf("Account created successfully! Account Number: %d\n",
          newAccount.accountNumber);
+
+  pauseScreen(); // Pause before returning
 }
 
 // Function to view bank accounts
@@ -386,6 +410,7 @@ void viewAccounts(char *username, int isAdmin) {
   int i;
   if (accountCount == 0) {
     printf("No accounts found.\n");
+    pauseScreen(); // Pause before returning
     return;
   }
 
@@ -402,6 +427,7 @@ void viewAccounts(char *username, int isAdmin) {
              accounts[i].loyaltyPoints);
     }
   }
+  pauseScreen(); // Pause before returning
 }
 
 // Function to view the details of a specific account
@@ -438,6 +464,8 @@ void viewAccountDetails(char *username, int isAdmin) {
   if (!found) {
     printf("Account not found.\n");
   }
+
+  pauseScreen(); // Pause before returning
 }
 
 // Function to edit an account
@@ -474,7 +502,10 @@ void editAccount(char *username, int isAdmin) {
 
   if (!found) {
     printf("Account not found.\n");
+    pauseScreen(); // Pause before returning
   }
+
+  pauseScreen(); // Pause before returning
 }
 
 // Function to delete an account
@@ -511,7 +542,10 @@ void deleteAccount(char *username, int isAdmin) {
 
   if (!found) {
     printf("Account not found.\n");
+    pauseScreen(); // Pause before returning
   }
+
+  pauseScreen(); // Pause before returning
 }
 
 // Function to debit from an account
@@ -553,15 +587,25 @@ void debitAccount(char *username, int isAdmin) {
                  accounts[i].balance);
         } else {
           printf("Insufficient balance.\n");
+          printf("\nPress Enter to continue...");
+          while (getchar() != '\n')
+            ; // Wait for user input
+          system("cls");
         }
       } else {
         printf("You do not have permission to debit from this account.\n");
       }
       return;
     }
+
+    printf("\nPress Enter to continue...");
+    while (getchar() != '\n')
+      ; // Wait for user input
+    system("cls");
   }
 
   printf("Account not found.\n");
+  pauseScreen(); // Pause before returning
 }
 
 // Function to credit an account
@@ -602,12 +646,17 @@ void creditAccount(char *username, int isAdmin) {
                accounts[i].balance);
       } else {
         printf("You do not have permission to credit this account.\n");
+        printf("\nPress Enter to continue...");
+        while (getchar() != '\n')
+          ; // Wait for user input
+        system("cls");
       }
       return;
     }
   }
 
   printf("Account not found.\n");
+  pauseScreen(); // Pause before returning
 }
 
 // Function to transfer funds between accounts
@@ -651,21 +700,25 @@ void fundTransfer(char *username, int isAdmin) {
   // Check if both accounts exist and if the user has permission
   if (sender == NULL) {
     printf("\nSender account not found.\n");
+    pauseScreen(); // Pause before returning
     return;
   }
 
   if (receiver == NULL) {
     printf("\nReceiver account not found.\n");
+    pauseScreen(); // Pause before returning
     return;
   }
 
   if (!isAdmin && strcmp(sender->ownerUsername, username) != 0) {
     printf("\nYou do not have permission to transfer from this account.\n");
+    pauseScreen(); // Pause before returning
     return;
   }
 
   if (sender->balance < amount) {
     printf("Insufficient balance in sender account.\n");
+    pauseScreen(); // Pause before returning
     return;
   }
 
@@ -681,6 +734,8 @@ void fundTransfer(char *username, int isAdmin) {
   saveAccountsToFile();
 
   printf("Transfer successful! New balance: USD %.2f\n", sender->balance);
+
+  pauseScreen(); // Pause before returning
 }
 
 // Function to inquire balance for the user's account
@@ -703,7 +758,10 @@ void balanceInquiry(char *username) {
 
   if (!found) {
     printf("\nYou have no accounts.\n");
+    pauseScreen(); // Pause before returning
   }
+
+  pauseScreen(); // Pause before returning
 }
 
 // Function to show all existing users
@@ -712,6 +770,10 @@ void showUsers() {
 
   if (userCount == 0) {
     printf("No users found.\n");
+    printf("\nPress Enter to continue...");
+    while (getchar() != '\n')
+      ; // Wait for user input
+
     return;
   }
 
@@ -732,6 +794,18 @@ void showUsers() {
     printf("Username: %s, Has Account: %s\n", users[i].username,
            hasAccount ? "Yes" : "No");
   }
+
+  pauseScreen(); // Pause before returning
+}
+
+// Function to pause the screen and clear it after user input
+void pauseScreen() {
+  printf("\nPress Enter to continue...");
+  while (getchar() != '\n')
+    ; // Consume any leftover input
+
+  // Clear the screen after the user presses Enter
+  system("cls");
 }
 
 // Main function to display the menu and manage the entire application
@@ -753,7 +827,8 @@ int main() {
 
     printf("\nEnter your choice: ");
     scanf("%d", &choice);
-    getchar(); // Consume newline after input
+    while (getchar() != '\n')
+      ; // Clear the input buffer
 
     switch (choice) {
     case 1:
@@ -767,6 +842,7 @@ int main() {
       break;
     default:
       printf("Invalid choice. Please try again.\n");
+      pauseScreen(); // Pause before re-displaying the menu
     }
   } while (choice != 3);
 
