@@ -591,9 +591,7 @@ void debitAccount(char *username, int isAdmin) {
         printf("You do not have permission to debit from this account.\n");
       }
       return;
-    }
-
-    pauseScreen();
+    }
   }
 
   printf("Account not found.\n");
