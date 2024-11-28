@@ -540,7 +540,6 @@ void deleteAccount(char *username, int isAdmin) {
 
   if (!found) {
     printf("Account not found.\n");
-    pauseScreen(); // Pause before returning
   }
 
   pauseScreen(); // Pause before returning
@@ -565,6 +564,7 @@ void debitAccount(char *username, int isAdmin) {
 
   if (amount <= 0) {
     printf("Invalid amount.\n");
+    pauseScreen(); // Pause before returning
     return;
   }
 
@@ -583,6 +583,7 @@ void debitAccount(char *username, int isAdmin) {
 
           printf("Amount debited successfully. New balance: USD %.2f\n",
                  accounts[i].balance);
+          pauseScreen(); // Pause before returning
         } else {
           printf("Insufficient balance.\n");
           pauseScreen(); // Pause before returning
@@ -591,7 +592,7 @@ void debitAccount(char *username, int isAdmin) {
         printf("You do not have permission to debit from this account.\n");
       }
       return;
-    }
+    }
   }
 
   printf("Account not found.\n");
@@ -617,6 +618,7 @@ void creditAccount(char *username, int isAdmin) {
 
   if (amount <= 0) {
     printf("Invalid amount.\n");
+    pauseScreen(); // Pause before returning
     return;
   }
 
@@ -634,6 +636,7 @@ void creditAccount(char *username, int isAdmin) {
 
         printf("Amount credited successfully. New balance: USD %.2f\n",
                accounts[i].balance);
+        pauseScreen(); // Pause before returning
       } else {
         printf("You do not have permission to credit this account.\n");
         pauseScreen(); // Pause before returning
